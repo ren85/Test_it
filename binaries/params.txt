@@ -1,0 +1,4 @@
+setMinMaxThreads => true
+maxSimultameousWorkerThreads => 1500
+minIdleWorkerThreads => 1000
+timeoutInSec => 60
