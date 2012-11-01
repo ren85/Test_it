@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TestIt.Tests;
+using System.Threading;
+
 
 namespace TestIt
 {
@@ -15,7 +17,7 @@ namespace TestIt
             int timeoutInSec = 60;
             bool DoStats = false;
             bool ShowAllOutput = true;
-
+            bool ShowCharts = false;
             bool setMinMaxThreads = false;
             int maxSimultameousWorkerThreads = 0;
             int minIdleWorkerThreads = 0;
@@ -56,6 +58,8 @@ namespace TestIt
                         DoStats = Convert.ToBoolean(parts[1]);
                     if (parts[0].Trim() == "showAllOutput")
                         ShowAllOutput = Convert.ToBoolean(parts[1]);
+                    if (parts[0].Trim() == "showCharts")
+                        ShowCharts = Convert.ToBoolean(parts[1]);
                 }
             }
 
@@ -103,10 +107,15 @@ namespace TestIt
                     {
                         current.ResponseShouldContain = parts[1].Trim();
                     }
-                    if (parts[0].Trim().ToLower() == "response_is_pdf")
+                    if (parts[0].Trim().ToLower() == "response_is_binary")
                     {
-                        current.IsResponsePdf = Convert.ToBoolean(parts[1]);
+                        current.IsResponseBinary = Convert.ToBoolean(parts[1]);
                     }
+                    if (parts[0].Trim().ToLower() == "binary_response_size_in_bytes_should_be")
+                    {
+                        current.BinaryResponseSizeInBytesShouldBe = Convert.ToInt32(parts[1]);
+                    }
+
                     if (parts[0].Trim().ToLower() == "common_header")
                     {
                         Header header = new Header();
@@ -134,9 +143,16 @@ namespace TestIt
                                        setMinMaxThreads: setMinMaxThreads,
                                        maxSimultameousWorkerThreads: maxSimultameousWorkerThreads,
                                        minIdleWorkerThreads: minIdleWorkerThreads);
+            
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            
+            if (ShowCharts)
+            {
+                Charting c = new Charting();
+                Thread t = new Thread(c.ShowActiveRequests);
+                t.Start();
+            }
             engine.DoTesting();
-
-            //Console.ReadLine();
         }
     }
 }

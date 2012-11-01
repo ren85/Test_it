@@ -13,31 +13,68 @@ namespace TestIt.Tests
         {
             this.request = request;
         }
-        public void DoWork(int TimeoutInSeconds, string nr)
+        public void DoWorkAsync(int TimeoutInSeconds, string nr, Action callback)
         {
-            DateTime start = DateTime.Now;
             try
             {
+                DateTime start = DateTime.Now;
                 using (MyWebClient client = new MyWebClient(TimeoutInSeconds))
                 {
                     client.Encoding = Encoding.UTF8;
-                    client.Headers[HttpRequestHeader.Accept] = "*/*";
-                    client.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate";
-                    client.Headers[HttpRequestHeader.UserAgent] = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.2; .NET4.0E)";
 
                     foreach (var header in request.Headers)
                         client.Headers[header.Key] = header.Value;
                     foreach (var header in request.CommonHeaders)
                         client.Headers[header.Key] = header.Value;
 
-                    var data = client.UploadData(request.Url, Helpers.BytesFromDelimitedString(request.BodyBytes));
-                    var res = Helpers.BytesToString(data);
-                    if (!res.Contains(request.ResponseShouldContain))
-                    {
-                        IsFailure = true;
-                        FailureReason = string.Format("Bad response, should-be-there string not found: ({0})", request.ResponseShouldContain);
-                        FailureTime = DateTime.Now;
-                    }
+                    client.UploadDataCompleted += (s, e) =>
+                        {
+                            ResponseTimeInMilliseconds = (int)(DateTime.Now - start).TotalMilliseconds;
+                            try
+                            {
+                                if (e.Error != null)
+                                {
+                                    IsFailure = true;
+                                    FailureReason = "General failure: " + (e.Error.InnerException != null ? e.Error.InnerException.Message : e.Error.Message);
+                                    FailureTime = DateTime.Now;
+                                }
+                                else
+                                {
+                                    if (e.Result != null)
+                                        DownloadedBytes = e.Result.Count(); 
+                                    if (request.IsResponseBinary)
+                                    {
+                                        if (e.Result.Count() != request.BinaryResponseSizeInBytesShouldBe)
+                                        {
+                                            IsFailure = true;
+                                            FailureReason = string.Format("Bad response, binary response size was {0} bytes, expected {1} bytes", e.Result.Count(), request.BinaryResponseSizeInBytesShouldBe);
+                                            FailureTime = DateTime.Now;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var res = Helpers.BytesToString(e.Result);
+                                        if (!res.Contains(request.ResponseShouldContain))
+                                        {
+                                            IsFailure = true;
+                                            FailureReason = string.Format("Bad response, should-be-there string not found: ({0})", request.ResponseShouldContain);
+                                            FailureTime = DateTime.Now;
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                IsFailure = true;
+                                FailureReason = "General failure: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                                FailureTime = DateTime.Now;
+                            }
+                            finally
+                            {
+                                callback();
+                            }
+                        };
+                    client.UploadDataAsync(new Uri(request.Url), Helpers.BytesFromDelimitedString(request.BodyBytes));
                 }
             }
             catch (Exception e)
@@ -45,10 +82,7 @@ namespace TestIt.Tests
                 IsFailure = true;
                 FailureReason = "General failure: " + (e.InnerException != null ? e.InnerException.Message : e.Message);
                 FailureTime = DateTime.Now;
-            }
-            finally
-            {
-                ResponseTimeInMilliseconds = (int)(DateTime.Now - start).TotalMilliseconds;
+                callback();
             }
         }
 
@@ -71,6 +105,12 @@ namespace TestIt.Tests
         }
 
         public int ResponseTimeInMilliseconds
+        {
+            get;
+            set;
+        }
+
+        public long DownloadedBytes
         {
             get;
             set;

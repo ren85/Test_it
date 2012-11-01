@@ -35,7 +35,6 @@ namespace TestIt
         int loadIntervalInSecs = 0;
         static object _lock = new object();
         List<ThreadJob> jobs = new List<ThreadJob>();
-        ManualResetEvent[] doneEvents = null;
         Timer timer = null;
         int[] loadMap = null;
         int currentSecond = 0;
@@ -45,50 +44,54 @@ namespace TestIt
         DateTime start;
         Random rg;
 
+        public static object counter_lock = new object();
+        public static int counter;
+        public static bool Done;
+        public TextWriter Log;
+
         public void DoTesting()
         {
-            if (setMinMaxThreads)
+            using (Log = new StreamWriter("log.txt"))
             {
-                int defMinWorkers, defMaxWorkers, defMinIO, defMaxIO;
-                ThreadPool.GetMinThreads(out defMinWorkers, out defMinIO);
-                ThreadPool.GetMaxThreads(out defMaxWorkers, out defMaxIO);
-
-                if (!ThreadPool.SetMaxThreads(maxSimultameousWorkerThreads, maxSimultameousWorkerThreads/*defMaxIO*/))
-                    throw new Exception(string.Format("Couldn't set max {0} working threads.", maxSimultameousWorkerThreads));
-                if (!ThreadPool.SetMinThreads(minIdleWorkerThreads, minIdleWorkerThreads/*defMinIO*/))
-                    throw new Exception(string.Format("Couldn't set min {0} working threads.", minIdleWorkerThreads));
-            }
-
-            timer = new Timer(TimeToStartSomeWorkers, null, Timeout.Infinite, Timeout.Infinite);
-            
-            foreach (var list in loadIntervals)
-            {                
-                loadIntervalInSecs = Convert.ToInt32(list[0]);
-                totalJobs = Convert.ToInt32(list[1]);
-
-                Console.WriteLine(string.Format("{0}: Starting interval: {1} jobs during {2} seconds", DateTime.Now, totalJobs, loadIntervalInSecs));
-                DoIntervalWork();
-
-                System.Threading.Thread.Sleep(60000);
-
-                if (DoStats)
+                if (setMinMaxThreads)
                 {
 
-                }                
+                    if (!ThreadPool.SetMaxThreads(maxSimultameousWorkerThreads, maxSimultameousWorkerThreads))
+                        throw new Exception(string.Format("Couldn't set max {0} working threads.", maxSimultameousWorkerThreads));
+                    if (!ThreadPool.SetMinThreads(minIdleWorkerThreads, minIdleWorkerThreads))
+                        throw new Exception(string.Format("Couldn't set min {0} working threads.", minIdleWorkerThreads));
+                }
+
+                timer = new Timer(TimeToStartSomeWorkers, null, Timeout.Infinite, Timeout.Infinite);
+
+                foreach (var list in loadIntervals)
+                {
+                    loadIntervalInSecs = Convert.ToInt32(list[0]);
+                    totalJobs = Convert.ToInt32(list[1]);
+                    counter = 0;
+
+                    WriteInfo(string.Format("{0}: Starting interval: {1} jobs during {2} seconds", DateTime.Now, totalJobs, loadIntervalInSecs));
+
+                    DoIntervalWork();
+
+                    if (DoStats)
+                    {
+
+                    }
+                }
             }
+            Console.WriteLine("Done. Output is in log.txt");
+            Done = true;
         }
 
         private void DoIntervalWork()
         {
             jobs = new List<ThreadJob>();
-            doneEvents = null;
             loadMap = null;
             currentSecond = 0;
             currentJob = 0;
             thatsIt = false;
             thatsReallyIt = false;
-
-            doneEvents = new ManualResetEvent[totalJobs];
             
             loadMap = new int[loadIntervalInSecs];
             rg = new Random();
@@ -98,12 +101,20 @@ namespace TestIt
             start = DateTime.Now;
             timer.Change(0, 1000);
             while (!thatsReallyIt)
+            {
                 System.Threading.Thread.Sleep(10000);
+            }
         }
 
-
+        void WriteInfo(string info)
+        {
+            Console.WriteLine(info);
+            Log.WriteLine(info);
+        }
         private void TimeToStartSomeWorkers(object info)
         {
+            if (currentSecond == loadIntervalInSecs) 
+                timer.Change(Timeout.Infinite, Timeout.Infinite);
             lock (_lock) //nothing blocks inside this except the last second (or so we hope)
             {
                 if (thatsIt)    //timer may start a little more threads than necessary
@@ -113,13 +124,22 @@ namespace TestIt
                 if (currentSecond == loadIntervalInSecs) //last second
                 {
                     thatsIt = true;
-                    timer.Change(Timeout.Infinite, Timeout.Infinite);
-                    Console.WriteLine("{0} should be equal (more or less) to {1}.", (DateTime.Now - start).TotalSeconds, loadIntervalInSecs);
+                    WriteInfo(string.Format("{0} should be equal (more or less) to {1}. If it isn't it means your computer wasn't always able to fire given amount of threads per second.", (DateTime.Now - start).TotalSeconds, loadIntervalInSecs));
 
-                    for (int i = 0; i < jobs.Count; i++)
-                        WaitHandle.WaitAll(new ManualResetEvent[1] { doneEvents[i] });
+                    if (jobs.Count(f => f.Completed) != jobs.Count)
+                    {
+                        WriteInfo("Waiting...");
+                        int waited = 0;
+                        while (waited < timeoutInSec+5)
+                        {
+                            System.Threading.Thread.Sleep(1000);
+                            waited++;
+                            if (jobs.Count(f => f.Completed) == jobs.Count)
+                                break;
+                        }
+                    }
 
-                    Console.WriteLine("{0}: all workers are done.", DateTime.Now);
+                    WriteInfo(string.Format("{0}: Total threads created: {1}, actually completed: {2} ({3}%)", DateTime.Now, jobs.Count, jobs.Count(f => f.Completed), Math.Round(jobs.Count(f => f.Completed)*100 / (double)jobs.Count)));
 
                     //calc and output stats                    
                     int failures = 0;
@@ -127,7 +147,7 @@ namespace TestIt
 
                     Dictionary<string, int> failureReasons = new Dictionary<string, int>();
                     List<KeyValuePair<DateTime, string>> errorTimes = new List<KeyValuePair<DateTime, string>>();
-                    foreach (ThreadJob job in jobs)
+                    foreach (ThreadJob job in jobs.Where(f => f.Completed))
                     {
                         if (!job.TerminatedSuccesfully)
                         {
@@ -143,15 +163,19 @@ namespace TestIt
                             totalMillisecs += job.ResponseTimeInMilliseconds;
                         }
                     }
-                    Console.WriteLine("Total workers: {0}, failed {1}, successful worker's avg time (sec) {2}", jobs.Count, failures,
-                        (jobs.Count - failures) != 0 ? (double)((totalMillisecs / (double)(jobs.Count - failures)) / (double)1000) : -1);
+                    WriteInfo(string.Format("Total workers: {0}, failed {1} ({2}%), successful worker's avg time (sec) {3}, downloaded (after decompression): {4} Mb", 
+                                            jobs.Count(f => f.Completed), 
+                                            failures, 
+                                            jobs.Count(f => f.Completed) != 0 ? Math.Round(failures*100 / (double)jobs.Count(f => f.Completed)) : 0,
+                                            (jobs.Count(f => f.Completed) - failures) != 0 ? (double)((totalMillisecs / (double)(jobs.Count(f => f.Completed) - failures)) / (double)1000) : -1,
+                                            Math.Round(jobs.Where(f => f.Completed).Sum(f => f.DownloadedBytes) / (double)1048576, 2)));
 
                     Dictionary<string, int> timeDistribution = new Dictionary<string, int>();
                     timeDistribution.Add("[0; 10] sec", 0);
                     timeDistribution.Add("[10; 30] sec", 0);
                     timeDistribution.Add("[30; 60] sec", 0);
                     timeDistribution.Add("[60; ...] sec", 0);
-                    foreach (ThreadJob job in jobs)
+                    foreach (ThreadJob job in jobs.Where(f => f.Completed))
                     {
                         if (job.TerminatedSuccesfully)
                         {
@@ -167,29 +191,28 @@ namespace TestIt
                         }
                     }
 
-                    Console.WriteLine("Time distribution:");
+                    WriteInfo("Time distribution:");
                     foreach (string key in timeDistribution.Keys)
-                        Console.WriteLine(key + ": " + timeDistribution[key] + " request(s)");
+                        WriteInfo(key + ": " + timeDistribution[key] + " request(s)");
 
                     if (failures != 0)
                     {
-                        Console.WriteLine("\nBelow are common failure reasons:");
-                        foreach (string failure in failureReasons.Keys)
-                            Console.WriteLine(string.Format("'{0}' happened {1} times", failure, failureReasons[failure]));
-                        Console.WriteLine("Error map:");
+                        WriteInfo("\nBelow are common failure reasons:");
+                        foreach (string failure in failureReasons.Keys.OrderByDescending(f => failureReasons[f]))
+                            WriteInfo(string.Format("'{0}' happened {1} times", failure, failureReasons[failure]));
+                        WriteInfo("Error map:");
                         foreach (var failureTime in errorTimes)
-                            Console.WriteLine(failureTime.Key + ": " + failureTime.Value);
+                            WriteInfo(failureTime.Key + ": " + failureTime.Value);
                     }
                     thatsReallyIt = true; //main program can exit
                 }
                 else
                 {
                     if(ShowAllOutput)
-                        Console.WriteLine("{0}: second {1}, jobs that second {2}", DateTime.Now, currentSecond, loadMap[currentSecond]);
+                        WriteInfo(string.Format("{0}: second {1}, jobs that second {2}, active requests: {3}", DateTime.Now, currentSecond, loadMap[currentSecond], Engine.counter));
                     for (int i = 0; i < loadMap[currentSecond]; i++) //how much work happened this second
                     {
-                        doneEvents[currentJob] = new ManualResetEvent(false);
-                        ThreadJob job = new ThreadJob(doneEvents[currentJob], timeoutInSec, string.Format("{0}.{1}", currentSecond, i), currentJob);
+                        ThreadJob job = new ThreadJob(timeoutInSec, string.Format("{0}.{1}", currentSecond, i), currentJob);
                         jobs.Add(job);
                         ThreadPool.QueueUserWorkItem(job.ThreadProc);
                         currentJob++;
@@ -197,6 +220,7 @@ namespace TestIt
                     currentSecond++;
                 }
             }
+            System.Threading.Thread.CurrentThread.Priority = ThreadPriority.Normal;
         }
     }
 
@@ -206,32 +230,47 @@ namespace TestIt
         public int ResponseTimeInMilliseconds { get; set; }
         public string FailureReason { get; set; }
         public DateTime FailureTime { get; set; }
+        public bool Completed { get; set; }
+        public long DownloadedBytes { get; set; }
 
-        ManualResetEvent _doneEvent;
         int timeoutInSec;
         string nr;
         int id;
 
-        public ThreadJob(ManualResetEvent doneEvent, int timeoutInSec, string nr, int id)
+        public ThreadJob(int timeoutInSec, string nr, int id)
         {
-            this._doneEvent = doneEvent;
             this.timeoutInSec = timeoutInSec;
             this.nr = nr;
             this.id = id;
         }
         public void ThreadProc(object state)
         {
-            ITest test = TestFactory.GetCurrentTest(id);
-            test.DoWork(timeoutInSec, nr);
-            TerminatedSuccesfully = !test.IsFailure;
-            ResponseTimeInMilliseconds = test.ResponseTimeInMilliseconds;
-            if (test.IsFailure)
+            lock (Engine.counter_lock)
             {
-                FailureReason = test.FailureReason;
-                FailureTime = test.FailureTime;
+                Engine.counter++;
             }
 
-            _doneEvent.Set();
+            ITest test = TestFactory.GetCurrentTest(id);
+            test.DoWorkAsync(timeoutInSec, nr, () => {
+
+                Completed = true;
+
+                TerminatedSuccesfully = !test.IsFailure;
+                ResponseTimeInMilliseconds = test.ResponseTimeInMilliseconds;
+                DownloadedBytes = test.DownloadedBytes;
+
+                if (test.IsFailure)
+                {
+                    FailureReason = test.FailureReason;
+                    FailureTime = test.FailureTime;
+                }
+
+                lock (Engine.counter_lock)
+                {
+                    Engine.counter--;
+                }
+            });
+           
 
             // Yield the rest of the time slice.
             System.Threading.Thread.Yield();

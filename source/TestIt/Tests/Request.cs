@@ -13,7 +13,8 @@ namespace TestIt.Tests
         public string BodyBytes { get; set; }
         public int Weight { get; set; }
         public string ResponseShouldContain { get; set; }
-        public bool IsResponsePdf { get; set; }
+        public bool IsResponseBinary { get; set; }
+        public int BinaryResponseSizeInBytesShouldBe { get; set; }
         public List<Header> CommonHeaders = new List<Header>();
 
         public Request()

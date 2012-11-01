@@ -7,7 +7,7 @@ namespace TestIt.Tests
 {
     interface ITest
     {
-        void DoWork(int TimeoutInSeconds, string nr);
+        void DoWorkAsync(int TimeoutInSeconds, string nr, Action callback);
 
         bool IsFailure
         {
@@ -22,6 +22,10 @@ namespace TestIt.Tests
             get;
         }
         int ResponseTimeInMilliseconds
+        {
+            get;
+        }
+        long DownloadedBytes
         {
             get;
         }

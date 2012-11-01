@@ -1,4 +1,10 @@
-setMinMaxThreads => true
+#these parameters are used in ThreadPool.SetMaxThreads(max, max) and ThreadPool.SetMinThreads(min, min). Change them if you know what that is, default is also OK.
+setMinMaxThreads => false
 maxSimultameousWorkerThreads => 1500
 minIdleWorkerThreads => 1000
+
+#if no response from the server received after this period, request will fail and the reason will be timeout.
 timeoutInSec => 60
+
+#if true, shows graphical chart with number of active requests. If number of active requests constantly grows, then your server is not doing well.
+showCharts => true

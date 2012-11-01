@@ -1,3 +1,5 @@
+#given number of requests will be uniformly distributed over given number of seconds
+#many rows could be specified
 #sec=>jobs
 
 10=>10
