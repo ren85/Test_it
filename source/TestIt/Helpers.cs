@@ -8,6 +8,7 @@ using System.Threading;
 
 namespace TestIt
 {
+    [System.ComponentModel.DesignerCategory("")]
     public class MyWebClient : WebClient
     {
         private int _timeout;
