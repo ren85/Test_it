@@ -74,7 +74,10 @@ namespace TestIt.Tests
                                 callback();
                             }
                         };
-                    client.UploadDataAsync(new Uri(request.Url), Helpers.BytesFromDelimitedString(request.BodyBytes));
+                    var uri = new Uri(request.Url);
+                    var servicePoint = ServicePointManager.FindServicePoint(uri);
+                    servicePoint.Expect100Continue = false;
+                    client.UploadDataAsync(uri, Helpers.BytesFromDelimitedString(request.BodyBytes));
                 }
             }
             catch (Exception e)

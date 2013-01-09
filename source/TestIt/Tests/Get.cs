@@ -64,7 +64,10 @@ namespace TestIt.Tests
                                     callback();
                                 }
                             };
-                        client.DownloadDataAsync(new Uri(request.Url));
+                        var uri = new Uri(request.Url);
+                        var servicePoint = ServicePointManager.FindServicePoint(uri);
+                        servicePoint.Expect100Continue = false;
+                        client.DownloadDataAsync(uri);
                     }
                     else
                     {
@@ -101,7 +104,10 @@ namespace TestIt.Tests
                                     callback();
                                 }
                             };
-                        client.DownloadStringAsync(new Uri(request.Url));
+                        var uri = new Uri(request.Url);
+                        var servicePoint = ServicePointManager.FindServicePoint(uri);
+                        servicePoint.Expect100Continue = false;
+                        client.DownloadStringAsync(uri);
                     }
                 }
             }

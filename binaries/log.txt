@@ -1,18 +1,18 @@
-11/1/2012 6:51:55 PM: Starting interval: 10 jobs during 10 seconds
-11/1/2012 6:51:55 PM: second 0, jobs that second 0, active requests: 0
-11/1/2012 6:51:56 PM: second 1, jobs that second 1, active requests: 0
-11/1/2012 6:51:57 PM: second 2, jobs that second 1, active requests: 1
-11/1/2012 6:51:58 PM: second 3, jobs that second 1, active requests: 1
-11/1/2012 6:51:59 PM: second 4, jobs that second 0, active requests: 2
-11/1/2012 6:52:00 PM: second 5, jobs that second 1, active requests: 0
-11/1/2012 6:52:01 PM: second 6, jobs that second 1, active requests: 1
-11/1/2012 6:52:02 PM: second 7, jobs that second 2, active requests: 1
-11/1/2012 6:52:03 PM: second 8, jobs that second 1, active requests: 3
-11/1/2012 6:52:04 PM: second 9, jobs that second 2, active requests: 3
-10.1292717 should be equal (more or less) to 10. If it isn't it means your computer wasn't always able to fire given amount of threads per second.
+1/9/2013 11:39:27 PM: Starting interval: 10 jobs during 10 seconds
+1/9/2013 11:39:28 PM: second 0, jobs that second 3, active requests: 0
+1/9/2013 11:39:29 PM: second 1, jobs that second 2, active requests: 3
+1/9/2013 11:39:30 PM: second 2, jobs that second 1, active requests: 2
+1/9/2013 11:39:31 PM: second 3, jobs that second 2, active requests: 2
+1/9/2013 11:39:32 PM: second 4, jobs that second 1, active requests: 4
+1/9/2013 11:39:33 PM: second 5, jobs that second 0, active requests: 4
+1/9/2013 11:39:34 PM: second 6, jobs that second 0, active requests: 2
+1/9/2013 11:39:35 PM: second 7, jobs that second 0, active requests: 2
+1/9/2013 11:39:36 PM: second 8, jobs that second 0, active requests: 2
+1/9/2013 11:39:37 PM: second 9, jobs that second 1, active requests: 1
+10.0345254 should be equal (more or less) to 10. If it isn't it means your computer wasn't always able to fire given amount of threads per second.
 Waiting...
-11/1/2012 6:52:08 PM: Total threads created: 10, actually completed: 10 (100%)
-Total workers: 10, failed 0 (0%), successful worker's avg time (sec) 2.4347, downloaded (after decompression): 1.8 Mb
+1/9/2013 11:39:41 PM: Total threads created: 10, actually completed: 10 (100%)
+Total workers: 10, failed 0 (0%), successful worker's avg time (sec) 3.2594, downloaded (after decompression): 1.8 Mb
 Time distribution:
 [0; 10] sec: 10 request(s)
 [10; 30] sec: 0 request(s)
