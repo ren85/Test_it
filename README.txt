@@ -1,6 +1,6 @@
 This is simple tool for load testing web apps. 
 The idea is to issue certain amount of http packets every second and measure response times and successful requests rates.
-Use it together with fiddler web debugger.
+Use it together with fiddler web debugger (on windows) or catcher (https://github.com/ren85/catcher) on linux.
 
 To use it: 
 1) get binaries (.net 4 is required, works on mono (>= v. 2.8) unmodified)
