@@ -17,6 +17,9 @@ namespace TestIt
             Application.Run(p);
         }
     }
+
+
+    [System.ComponentModel.DesignerCategory("")]
     public class Plot : Form
     {
         Timer timer;

@@ -13,12 +13,12 @@ namespace TestIt.Tests
         {
             this.request = request;
         }
-        public void DoWorkAsync(int TimeoutInSeconds, string nr, Action callback)
+        public void DoWorkAsync(string nr, Action callback)
         {
             try
             {
                 DateTime start = DateTime.Now;
-                using (MyWebClient client = new MyWebClient(TimeoutInSeconds))
+                using (MyWebClient client = new MyWebClient())
                 {
                     foreach (var header in request.Headers)
                         client.Headers[header.Key] = header.Value;

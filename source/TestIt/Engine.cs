@@ -12,7 +12,6 @@ namespace TestIt
     {   
         //PARAMS  
         List<List<string>> loadIntervals;
-        int timeoutInSec = 0;
         bool DoStats = false;
         bool ShowAllOutput = true;
         bool setMinMaxThreads = false;
@@ -20,10 +19,9 @@ namespace TestIt
         int minIdleWorkerThreads = 0;
         //PARAMS
 
-        public Engine(List<List<string>> loadIntervals, int timeoutInSec, bool DoStats, bool ShowAllOutput, bool setMinMaxThreads, int maxSimultameousWorkerThreads, int minIdleWorkerThreads)
+        public Engine(List<List<string>> loadIntervals, bool DoStats, bool ShowAllOutput, bool setMinMaxThreads, int maxSimultameousWorkerThreads, int minIdleWorkerThreads)
         {
             this.loadIntervals = loadIntervals;
-            this.timeoutInSec = timeoutInSec;
             this.DoStats = DoStats;
             this.ShowAllOutput = ShowAllOutput;
             this.setMinMaxThreads = setMinMaxThreads;
@@ -128,9 +126,9 @@ namespace TestIt
 
                     if (jobs.Count(f => f.Completed) != jobs.Count)
                     {
-                        WriteInfo("Waiting...");
+                        WriteInfo("Waiting (max one minute)...");
                         int waited = 0;
-                        while (waited < timeoutInSec+5)
+                        while (waited < 60)
                         {
                             System.Threading.Thread.Sleep(1000);
                             waited++;
@@ -139,7 +137,7 @@ namespace TestIt
                         }
                     }
 
-                    WriteInfo(string.Format("{0}: Total threads created: {1}, actually completed: {2} ({3}%)", DateTime.Now, jobs.Count, jobs.Count(f => f.Completed), Math.Round(jobs.Count(f => f.Completed)*100 / (double)jobs.Count)));
+                    WriteInfo(string.Format("{0}: Total threads created: {1}, actually completed before test ended: {2} ({3}%)", DateTime.Now, jobs.Count, jobs.Count(f => f.Completed), Math.Round(jobs.Count(f => f.Completed)*100 / (double)jobs.Count)));
 
                     //calc and output stats                    
                     int failures = 0;
@@ -163,7 +161,7 @@ namespace TestIt
                             totalMillisecs += job.ResponseTimeInMilliseconds;
                         }
                     }
-                    WriteInfo(string.Format("Total workers: {0}, failed {1} ({2}%), successful worker's avg time (sec) {3}, downloaded (after decompression): {4} Mb", 
+                    WriteInfo(string.Format("Total completed workers: {0}, of which failed {1} ({2}%), successful worker's avg time (sec) {3}, downloaded (after decompression): {4} Mb", 
                                             jobs.Count(f => f.Completed), 
                                             failures, 
                                             jobs.Count(f => f.Completed) != 0 ? Math.Round(failures*100 / (double)jobs.Count(f => f.Completed)) : 0,
@@ -212,7 +210,7 @@ namespace TestIt
                         WriteInfo(string.Format("{0}: second {1}, jobs that second {2}, active requests: {3}", DateTime.Now, currentSecond, loadMap[currentSecond], Engine.counter));
                     for (int i = 0; i < loadMap[currentSecond]; i++) //how much work happened this second
                     {
-                        ThreadJob job = new ThreadJob(timeoutInSec, string.Format("{0}.{1}", currentSecond, i), currentJob);
+                        ThreadJob job = new ThreadJob(string.Format("{0}.{1}", currentSecond, i), currentJob);
                         jobs.Add(job);
                         ThreadPool.QueueUserWorkItem(job.ThreadProc);
                         currentJob++;
@@ -233,13 +231,11 @@ namespace TestIt
         public bool Completed { get; set; }
         public long DownloadedBytes { get; set; }
 
-        int timeoutInSec;
         string nr;
         int id;
 
-        public ThreadJob(int timeoutInSec, string nr, int id)
+        public ThreadJob(string nr, int id)
         {
-            this.timeoutInSec = timeoutInSec;
             this.nr = nr;
             this.id = id;
         }
@@ -251,7 +247,7 @@ namespace TestIt
             }
 
             ITest test = TestFactory.GetCurrentTest(id);
-            test.DoWorkAsync(timeoutInSec, nr, () => {
+            test.DoWorkAsync(nr, () => {
 
                 Completed = true;
 

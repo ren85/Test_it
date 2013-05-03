@@ -7,7 +7,7 @@ namespace TestIt.Tests
 {
     interface ITest
     {
-        void DoWorkAsync(int TimeoutInSeconds, string nr, Action callback);
+        void DoWorkAsync(string nr, Action callback);
 
         bool IsFailure
         {

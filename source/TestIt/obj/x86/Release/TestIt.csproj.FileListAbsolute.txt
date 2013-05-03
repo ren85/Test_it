@@ -1,0 +1,6 @@
+C:\Users\r.zinatulinas\Desktop\Test_it\source\TestIt\bin\Release\TestIt.exe.config
+C:\Users\r.zinatulinas\Desktop\Test_it\source\TestIt\bin\Release\TestIt.exe
+C:\Users\r.zinatulinas\Desktop\Test_it\source\TestIt\bin\Release\TestIt.pdb
+C:\Users\r.zinatulinas\Desktop\Test_it\source\TestIt\obj\x86\Release\TestIt.csprojResolveAssemblyReference.cache
+C:\Users\r.zinatulinas\Desktop\Test_it\source\TestIt\obj\x86\Release\TestIt.exe
+C:\Users\r.zinatulinas\Desktop\Test_it\source\TestIt\obj\x86\Release\TestIt.pdb

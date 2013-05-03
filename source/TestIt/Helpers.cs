@@ -34,16 +34,16 @@ namespace TestIt
         /// <summary>
         /// Time in seconds
         /// </summary>
-        public MyWebClient(int timeout)
-        {
-            this._timeout = timeout;
-        }
+        //public MyWebClient(int timeout)
+        //{
+        //    this._timeout = timeout;
+        //}
 
         protected override WebRequest GetWebRequest(Uri address)
         {
             HttpWebRequest request = base.GetWebRequest(address) as HttpWebRequest;
             request.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
-            request.Timeout = this._timeout * 1000;
+            //request.Timeout = this._timeout * 1000;
             request.ServicePoint.ConnectionLimit = Int32.MaxValue;
             return request;
         }

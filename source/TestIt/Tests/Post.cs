@@ -13,12 +13,12 @@ namespace TestIt.Tests
         {
             this.request = request;
         }
-        public void DoWorkAsync(int TimeoutInSeconds, string nr, Action callback)
+        public void DoWorkAsync(string nr, Action callback)
         {
             try
             {
                 DateTime start = DateTime.Now;
-                using (MyWebClient client = new MyWebClient(TimeoutInSeconds))
+                using (MyWebClient client = new MyWebClient())
                 {
                     client.Encoding = Encoding.UTF8;
 

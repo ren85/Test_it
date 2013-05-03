@@ -14,7 +14,7 @@ namespace TestIt
         static void Main(string[] args)
         {
             List<List<string>> loadIntervals = new List<List<string>>();
-            int timeoutInSec = 60;
+            //int timeoutInSec = 60;
             bool DoStats = false;
             bool ShowAllOutput = true;
             bool ShowCharts = false;
@@ -50,8 +50,8 @@ namespace TestIt
                         maxSimultameousWorkerThreads = Convert.ToInt32(parts[1]);
                     if (parts[0].Trim() == "minIdleWorkerThreads")
                         minIdleWorkerThreads = Convert.ToInt32(parts[1]);
-                    if (parts[0].Trim() == "timeoutInSec")
-                        timeoutInSec = Convert.ToInt32(parts[1]);
+                    //if (parts[0].Trim() == "timeoutInSec")
+                    //    timeoutInSec = Convert.ToInt32(parts[1]);
                     if (parts[0].Trim() == "setMinMaxThreads")
                         setMinMaxThreads = Convert.ToBoolean(parts[1]);
                     if (parts[0].Trim() == "doStats")
@@ -137,7 +137,6 @@ namespace TestIt
             }
 
             Engine engine = new Engine(loadIntervals: loadIntervals,
-                                       timeoutInSec: timeoutInSec,
                                        DoStats: DoStats,
                                        ShowAllOutput: ShowAllOutput,
                                        setMinMaxThreads: setMinMaxThreads,
