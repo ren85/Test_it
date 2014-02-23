@@ -62,6 +62,9 @@
     <Compile Include="Tests\ITest.cs" />
     <Compile Include="Tests\Post.cs" />
     <Compile Include="Tests\Request.cs" />
+    <Compile Include="Transform\ITransform.cs" />
+    <Compile Include="Transform\RandomString.cs" />
+    <Compile Include="Transform\TransformFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

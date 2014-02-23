@@ -1,0 +1,5 @@
+C:\Users\Administrator\Desktop\Test_it\source\TestIt\bin\Debug\TestIt.exe.config
+C:\Users\Administrator\Desktop\Test_it\source\TestIt\bin\Debug\TestIt.exe
+C:\Users\Administrator\Desktop\Test_it\source\TestIt\bin\Debug\TestIt.pdb
+C:\Users\Administrator\Desktop\Test_it\source\TestIt\obj\x86\Debug\TestIt.exe
+C:\Users\Administrator\Desktop\Test_it\source\TestIt\obj\x86\Debug\TestIt.pdb

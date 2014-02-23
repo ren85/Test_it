@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TestIt.Tests;
+using TestIt.Transform;
 
 namespace TestIt
 {
@@ -19,7 +20,10 @@ namespace TestIt
         {
             var random = new Random(id);
             int index = Indexes_distribution[random.Next(0, Indexes_count)];
-            Request request = Requests[index];
+            Request request = Request.CopyRequest(Requests[index]);
+
+            request = TransformFactory.PerformTransformations(request);
+
             if (request.Type == RequestType.Get)
                 return new Get(request);
             else

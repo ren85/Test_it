@@ -27,7 +27,7 @@ namespace TestIt.Tests
                     foreach (var header in request.CommonHeaders)
                         client.Headers[header.Key] = header.Value;
 
-                    client.UploadDataCompleted += (s, e) =>
+                    client.UploadStringCompleted += (s, e) =>
                         {
                             ResponseTimeInMilliseconds = (int)(DateTime.Now - start).TotalMilliseconds;
                             try
@@ -53,8 +53,8 @@ namespace TestIt.Tests
                                     }
                                     else
                                     {
-                                        var res = Helpers.BytesToString(e.Result);
-                                        if (!res.Contains(request.ResponseShouldContain))
+                                        var res = e.Result;
+                                        if (!string.IsNullOrEmpty(request.ResponseShouldContain) && !res.Contains(request.ResponseShouldContain))
                                         {
                                             IsFailure = true;
                                             FailureReason = string.Format("Bad response, should-be-there string not found: ({0})", request.ResponseShouldContain);
@@ -75,9 +75,10 @@ namespace TestIt.Tests
                             }
                         };
                     var uri = new Uri(request.Url);
-                    var servicePoint = ServicePointManager.FindServicePoint(uri);
-                    servicePoint.Expect100Continue = false;
-                    client.UploadDataAsync(uri, Helpers.BytesFromDelimitedString(request.BodyBytes));
+                    //var servicePoint = ServicePointManager.FindServicePoint(uri);
+                    //servicePoint.Expect100Continue = false;
+                    System.Net.ServicePointManager.Expect100Continue = false;
+                    client.UploadStringAsync(uri, request.BodyBytes);
                 }
             }
             catch (Exception e)

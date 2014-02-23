@@ -65,8 +65,9 @@ namespace TestIt.Tests
                                 }
                             };
                         var uri = new Uri(request.Url);
-                        var servicePoint = ServicePointManager.FindServicePoint(uri);
-                        servicePoint.Expect100Continue = false;
+                        //var servicePoint = ServicePointManager.FindServicePoint(uri);
+                        //servicePoint.Expect100Continue = false;
+                        System.Net.ServicePointManager.Expect100Continue = false;
                         client.DownloadDataAsync(uri);
                     }
                     else
@@ -86,7 +87,7 @@ namespace TestIt.Tests
                                         FailureReason = "General failure: " + (e.Error.InnerException != null ? e.Error.InnerException.Message : e.Error.Message);
                                         FailureTime = DateTime.Now;
                                     }
-                                    else if (!e.Result.Contains(request.ResponseShouldContain))
+                                    else if (!string.IsNullOrEmpty(request.ResponseShouldContain) && !e.Result.Contains(request.ResponseShouldContain))
                                     {
                                         IsFailure = true;
                                         FailureReason = string.Format("Bad response, should-be-there string not found: ({0})", request.ResponseShouldContain);
@@ -105,8 +106,9 @@ namespace TestIt.Tests
                                 }
                             };
                         var uri = new Uri(request.Url);
-                        var servicePoint = ServicePointManager.FindServicePoint(uri);
-                        servicePoint.Expect100Continue = false;
+                        //var servicePoint = ServicePointManager.FindServicePoint(uri);
+                        //servicePoint.Expect100Continue = false;
+                        System.Net.ServicePointManager.Expect100Continue = false;
                         client.DownloadStringAsync(uri);
                     }
                 }

@@ -62,6 +62,15 @@ namespace TestIt
             return bytes.ToArray<byte>();
         }
 
+        public static string ToDelimitedString(string s)
+        {
+            var res = new StringBuilder();
+            var bytes = System.Text.Encoding.UTF8.GetBytes(s);
+            foreach (var b in bytes)
+                res.Append(b.ToString() + "|");
+            return res.ToString();
+        }
+
         public static string BytesToString(byte[] bytes)
         { 
             return Encoding.UTF8.GetString(bytes);
@@ -97,7 +106,6 @@ namespace TestIt
                 elements[swapIndex] = elements[i];
             }
         }
-
     }
 
     public static class MyRandom

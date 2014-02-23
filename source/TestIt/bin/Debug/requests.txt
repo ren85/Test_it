@@ -1,0 +1,21 @@
+﻿#all requests are described here. 'type' must be first field in each description, order of the other fields is not important
+#weight influences the proportion of given request among all requests
+
+type => get
+url => http://80.241.220.223:8080/storage/{random_string}
+weight => 1
+
+
+type => post
+url => http://80.241.220.223:8080/storage/put
+header => Content-Type => application/x-www-form-urlencoded; charset=UTF-8
+header => Pragma => no-cache
+#Key={random_string}&Value={random_string}
+body_bytes => 75|101|121|61|123|114|97|110|100|111|109|95|115|116|114|105|110|103|125|38|86|97|108|117|101|61|123|114|97|110|100|111|109|95|115|116|114|105|110|103|125|
+response_should_contain => None
+weight => 10
+
+
+common_header => Accept-Encoding => gzip, deflate
+common_header => Accept => */*
+common_header => User-Agent => Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.2; .NET4.0E)
