@@ -1,20 +1,13 @@
 ﻿#all requests are described here. 'type' must be first field in each description, order of the other fields is not important
 #weight influences the proportion of given request among all requests
 
-type => get
-url => http://80.241.220.223:8080/storage/{random_string}
-weight => 1
-
-
 type => post
-url => http://80.241.220.223:8080/storage/put
+url => https://188.226.223.36/storage
 header => Content-Type => application/x-www-form-urlencoded; charset=UTF-8
 header => Pragma => no-cache
-#Key={random_string}&Value={random_string}
-body_bytes => 75|101|121|61|123|114|97|110|100|111|109|95|115|116|114|105|110|103|125|38|86|97|108|117|101|61|123|114|97|110|100|111|109|95|115|116|114|105|110|103|125|
+#Key={next_number}&Value={random_string}&Type=w&Secret=0123456789ABCDEF
+body_bytes => 75|101|121|61|123|110|101|120|116|95|110|117|109|98|101|114|125|38|86|97|108|117|101|61|123|114|97|110|100|111|109|95|115|116|114|105|110|103|125|38|84|121|112|101|61|119|38|83|101|99|114|101|116|61|48|49|50|51|52|53|54|55|56|57|65|66|67|68|69|70|
 response_should_contain => None
-weight => 10
-
 
 common_header => Accept-Encoding => gzip, deflate
 common_header => Accept => */*

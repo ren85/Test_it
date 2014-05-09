@@ -25,11 +25,9 @@ namespace TestIt.Transform
             request.Url = request.Url.Replace("{random_string}", Helpers.GetRandomString());
             if (!string.IsNullOrEmpty(request.BodyBytes))
             {
-                var body = Helpers.BytesToString(Helpers.BytesFromDelimitedString(request.BodyBytes));
-                if (body.Contains("{random_string}"))
+                if (request.BodyBytes.Contains("{random_string}"))
                 {
-                    body = body.Replace("{random_string}", Helpers.GetRandomString() + RandomString.LoadString);
-                    request.BodyBytes = body;
+                    request.BodyBytes = request.BodyBytes.Replace("{random_string}", Helpers.GetRandomString() + RandomString.LoadString);
                 }
             }
 
